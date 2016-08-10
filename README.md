@@ -1,8 +1,8 @@
 # loot
 
-loot is a command line tool that helps you work with github without pain, all work can be done in terminal.
+`loot` is a command line tool that helps you work with github in terminal without pain.
 
-Now `loot` only supports downloading gist in terminal.
+Now `loot` only supports checking and downloading gist.
 
 **More features are working in process.**
 
@@ -14,15 +14,15 @@ Now `loot` only supports downloading gist in terminal.
 
 use `loot --help` to check supported commands and options
 
-## Example
+## Examples
 
 ### gist
 
-Show all gists gaotongfei created:
+Show all gists that user gaotongfei created:
 
 `loot gist -u gaotongfei`
 
-Show all gists gaotongfei created that contains keyword: 'request' in gists' description and filename
+Show all gists that user gaotongfei created that contains keyword: 'request' in gists' description and filename
 
 `loot gist -u gaotongfei -k request`
 
