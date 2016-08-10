@@ -57,7 +57,6 @@ def gist(user, gist_id, keyword, prettyprint):
                 continue
             result.append(single_result)
 
-        # click.echo(result)
         if prettyprint:
             echo(json.dumps(result, indent=4, sort_keys=True))
         else:
@@ -81,7 +80,6 @@ def clone(gist_id, dir):
         gist_file_info = files[file]
         filename = gist_file_info['filename']
         echo(style("        {0}\n".format(filename), fg='red'))
-        #pprint.pprint(gist_file_info)
 
         raw_url = gist_file_info['raw_url']
         gists.append({
