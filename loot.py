@@ -8,17 +8,16 @@ import os
 
 @group()
 def cli():
-    """loot helps you work with github without pain, 
-    use `loot --help` to check supported commands"""
+    """loot helps you work with github in terminal without 
+    pain, use `loot --help` to check supported commands"""
     pass
 
 @command()
 @option('--user', '-u', help='Specify github user\' which you want to \
                                     check or download')
-@option('--gist_id', '-i', help='Gist id')
 @option('--keyword', '-k', help='Keyword you want to search')
 @option('--prettyprint', '-p', is_flag=True, help="Pretty print")
-def gist(user, gist_id, keyword, prettyprint):
+def gist(user, keyword, prettyprint):
     """check gist information"""
     if not user:
         echo('please use `loot gist --help to check supported options`')
@@ -42,10 +41,13 @@ def gist(user, gist_id, keyword, prettyprint):
                 }
 
                 # search in by filename and description
-                if keyword in file_dict['file_name'] or keyword in description:
-                    file_result.append(file_dict)
+                if keyword:
+                    if keyword in file_dict['file_name'] or keyword in description:
+                        file_result.append(file_dict)
+                    else:
+                        continue
                 else:
-                    continue
+                    file_result.append(file_dict)
             
             if len(file_result) > 0:
                 single_result = {
@@ -87,15 +89,21 @@ def clone(gist_id, dir):
             'raw_url': raw_url 
         })
 
+    value = 'y'
     if files_count > 1:
         value = prompt('Download them all? (y/n)', default='y').lower()
-        if value == 'y' or value == '':
-            for gist in gists:
-                with open(os.path.join(dir, gist['filename']), 'wb') as gist_file:
-                    content = requests.get(gist['raw_url']).content
-                    gist_file.write(content)
-        elif value == 'n':
-            pass
+    if value == 'y' or value == '':
+        for gist in gists:
+            filename = gist['filename']
+            raw_url = gist['raw_url']
+            path = os.path.join(dir, filename)
+            with open(path, 'wb') as gist_file:
+                echo('downloading {0}'.format(filename))
+                content = requests.get(raw_url).content
+                gist_file.write(content)
+        echo('done...')
+    elif value == 'n':
+        pass
 
 
 cli.add_command(gist)
