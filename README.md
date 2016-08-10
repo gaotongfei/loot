@@ -8,7 +8,9 @@ Now `loot` only supports checking and downloading gist.
 
 ## Install
 
-`pip install loot`
+```
+pip install loot
+```
 
 ## Usage
 
