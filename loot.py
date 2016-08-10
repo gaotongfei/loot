@@ -8,6 +8,8 @@ import os
 
 @group()
 def cli():
+    """loot helps you work with github without pain, 
+    use `loot --help` to check supported commands"""
     pass
 
 @command()
@@ -16,48 +18,50 @@ def cli():
 @option('--gist_id', '-i', help='Gist id')
 @option('--keyword', '-k', help='Keyword you want to search')
 @option('--prettyprint', '-p', is_flag=True, help="Pretty print")
-def gist(user, dir, gist_id, keyword, prettyprint):
-    """loot helps you work with github without pain, 
-    use `loot --help` to check supported commands"""
-    r = requests.get('https://api.github.com/users/{0}/gists'.format(user))
-    json_res = r.json()
-    result = []
-    for r in json_res:
-        id = r['id']
-        files = r['files']
-        description = r['description']
-        file_result = []
-        for file in files:
-            file_name = file
-            language = files[file]['language']
-            raw_url = files[file]['raw_url']
-            file_dict = {
-                'file_name': file_name,
-                'language': language,
-                'raw_url': raw_url
-            }
+def gist(user, gist_id, keyword, prettyprint):
+    """check gist information"""
+    if not user:
+        echo('please use `loot gist --help to check supported options`')
+    else:
+        r = requests.get('https://api.github.com/users/{0}/gists'.format(user))
+        json_res = r.json()
+        result = []
+        for r in json_res:
+            id = r['id']
+            files = r['files']
+            description = r['description']
+            file_result = []
+            for file in files:
+                file_name = file
+                language = files[file]['language']
+                raw_url = files[file]['raw_url']
+                file_dict = {
+                    'file_name': file_name,
+                    'language': language,
+                    'raw_url': raw_url
+                }
 
-            # search in by filename and description
-            if keyword in file_dict['file_name'] or keyword in description:
-                file_result.append(file_dict)
+                # search in by filename and description
+                if keyword in file_dict['file_name'] or keyword in description:
+                    file_result.append(file_dict)
+                else:
+                    continue
+            
+            if len(file_result) > 0:
+                single_result = {
+                    'id': id,
+                    'description': description,
+                    'files': file_result
+                }
             else:
                 continue
-        
-        if len(file_result) > 0:
-            single_result = {
-                'id': id,
-                'description': description,
-                'files': file_result
-            }
-        else:
-            continue
-        result.append(single_result)
+            result.append(single_result)
 
-    # click.echo(result)
-    if prettyprint:
-        echo(json.dumps(result, indent=4, sort_keys=True))
-    else:
-        echo(result)
+        # click.echo(result)
+        if prettyprint:
+            echo(json.dumps(result, indent=4, sort_keys=True))
+        else:
+            echo(result)
 
 @command()
 @argument('gist_id')
