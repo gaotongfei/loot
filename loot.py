@@ -3,7 +3,23 @@ from click import echo, style, group, command, option, argument, prompt
 import requests
 import json
 import pprint
-import os
+from os.path import join, expanduser
+import base64
+
+try:
+    # python 2
+    import ConfigParser as configparser
+    def bytes(string, encoding=None):
+        return str(string)
+except:
+    # python 3
+    import configparser
+
+
+config = configparser.ConfigParser()
+config.readfp(open(join(expanduser('~'), '.loot.conf')))
+USERNAME = config.get('loot', 'username')
+PASSWORD = config.get('loot', 'password')
 
 
 @group()
@@ -13,14 +29,45 @@ def cli():
     pass
 
 @command()
-@option('--user', '-u', help='Specify github user\' which you want to \
+@option('--username', '-u', help='Specify github user\' which you want to \
                                     check or download')
+@option('--password', '-p', help='account password')
 @option('--keyword', '-k', help='Keyword you want to search')
-@option('--prettyprint', '-p', is_flag=True, help="Pretty print")
-def gist(user, keyword, prettyprint):
+@option('--pprint', is_flag=True, help="Pretty print")
+@option('--create', '-c', is_flag=True, help="create gist")
+@option('--path', '-p', help='path of the file that you want to create as gist')
+def gist(username, password, keyword, prettyprint, create):
     """check gist information"""
-    if not user:
+    if not user and not create:
         echo('please use `loot gist --help to check supported options`')
+    elif create:
+        if not path:
+            echo('please specify the path of file that you want to create as gist')
+        else:
+            gist_filename = path.split('/')[-1]
+            with open(path, 'rb') as gist_file:
+                content = gist_file.read()
+            description = prompt('Description of this gist: ')
+            public = prompt('Do you want to make it public? (y/n)', default='y').lower()
+
+            username = username or USERNAME
+            password = password or PASSWORD
+
+            basic_auth_token = base64.b64encode(bytes('{0}:{1}'.
+                format(username, password), 'utf-8')).encode('ascii')
+            authorization = 'Basic {0}'.format(basic_auth_token)
+            headers = {
+                'Authorization': authorization
+            }
+            data = {
+                "description": description,
+                "public": public,
+                "files": {
+                    
+                }
+            }
+
+        
     else:
         r = requests.get('https://api.github.com/users/{0}/gists'.format(user))
         json_res = r.json()
@@ -96,7 +143,7 @@ def clone(gist_id, dir):
         for gist in gists:
             filename = gist['filename']
             raw_url = gist['raw_url']
-            path = os.path.join(dir, filename)
+            path = join(dir, filename)
             with open(path, 'wb') as gist_file:
                 echo('downloading {0}'.format(filename))
                 content = requests.get(raw_url).content

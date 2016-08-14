@@ -1,3 +1,6 @@
+example.txt
+*.html
+.DS_STORE
 build
 dist
 venv
